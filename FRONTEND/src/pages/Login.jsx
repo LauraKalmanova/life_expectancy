@@ -1,0 +1,77 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export default function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('http://localhost:3000/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to login');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.token); // Store the token in localStorage
+      navigate('/'); // Redirect to the home page after successful login
+    } catch (err) {
+      setError(err.message);
+      console.error('Error logging in:', err);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+      <div className="bg-card rounded-lg shadow p-6 w-full max-w-md">
+        <h1 className="text-3xl font-bold mb-6">Se Connecter</h1>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <form onSubmit={handleLogin}>
+          <div className="mb-4">
+            <label htmlFor="username" className="block text-sm font-medium mb-2">
+              Nom d'utilisateur
+            </label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="bg-background border border-muted p-2 rounded w-full"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="password" className="block text-sm font-medium mb-2">
+              Mot de passe
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-background border border-muted p-2 rounded w-full"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-primary text-primary-foreground py-2 px-4 rounded hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-foreground"
+          >
+            Se Connecter
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
